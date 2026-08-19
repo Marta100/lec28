@@ -7,8 +7,9 @@ import { isValidObjectId, Model } from 'mongoose';
 
 @Injectable()
 export class UsersService {
-   constructor(@InjectModel(User.name) private userModel:Model<User>){}
-  async create(createUserDto: CreateUserDto) {
+  constructor(@InjectModel(User.name) private userModel:Model<User>){}
+
+ async create(createUserDto: CreateUserDto) {
     const exsisitingUser = await this.userModel.findOne({email:createUserDto.email})
     if(exsisitingUser) throw new BadRequestException()
 
@@ -17,7 +18,7 @@ export class UsersService {
     return createNewUser
   }
 
- async findAll() {
+  findAll() {
     return this.userModel.find()
   }
 
@@ -47,4 +48,13 @@ export class UsersService {
 
     return findUserAndDeleteById
   }
+
+
+  async addPost(userId,postId){
+   const updateUSer = await this.userModel.findByIdAndUpdate(userId,{$push:{posts:postId}})
+   return updateUSer
+  }
+
+
+
 }

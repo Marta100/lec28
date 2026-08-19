@@ -1,49 +1,35 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schema/post.schema';
 import { Model } from 'mongoose';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class PostsService {
-constructor(@InjectModel(Post.name) private postsModel: Model<any>) {}
- 
-  async create(userId: string, createPostDto: CreatePostDto) {
-    const newPost = await this.postsModel.create({
-      ...createPostDto,
-      user: userId,
-    });
-    return newPost;
+  constructor(@InjectModel(Post.name) private postsModel:Model<any>,private userService:UsersService){}
+
+ async create(userId:string,createPostDto: CreatePostDto) {
+  const user = await this.userService.findOne(userId)
+    const newPost = await this.postsModel.create({...createPostDto,user:user._id})
+    await this.userService.addPost(user._id,newPost._id)
+    return newPost
   }
 
-
-  async findAll() {
-    return this.postsModel.find().populate('user').exec();
+  findAll() {
+    return this.postsModel.find()
   }
 
- 
-  async findOne(id: string) {
-    const post = await this.postsModel.findById(id).populate('user').exec();
-    if (!post) throw new NotFoundException('პოსტი ვერ მოიძებნა');
-    return post;
+  findOne(id: string) {
+    return `This action returns a #${id} post`;
   }
 
-
-  async update(id: string, updatePostDto: UpdatePostDto) {
-    const updatedPost = await this.postsModel.findByIdAndUpdate(
-      id,
-      updatePostDto,
-      { new: true },
-    );
-    if (!updatedPost) throw new NotFoundException('პოსტი ვერ მოიძებნა');
-    return updatedPost;
+  update(id: string, updatePostDto: UpdatePostDto) {
+    return `This action updates a #${id} post`;
   }
 
-
-  async remove(id: string) {
-    const deletedPost = await this.postsModel.findByIdAndDelete(id);
-    if (!deletedPost) throw new NotFoundException('პოსტი ვერ მოიძებნა');
-    return { message: 'პოსტი წარმატებით წაიშალა' };
+  remove(id: string) {
+    return `This action removes a #${id} post`;
   }
 }
