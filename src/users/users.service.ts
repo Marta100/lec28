@@ -7,54 +7,49 @@ import { isValidObjectId, Model } from 'mongoose';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel:Model<User>){}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
- async create(createUserDto: CreateUserDto) {
-    const exsisitingUser = await this.userModel.findOne({email:createUserDto.email})
-    if(exsisitingUser) throw new BadRequestException()
+  async create(createUserDto: CreateUserDto) {
+    const exsisitingUser = await this.userModel.findOne({ email: createUserDto.email });
+    if (exsisitingUser) throw new BadRequestException();
 
-      const createNewUser = await this.userModel.create(createUserDto)
-
-    return createNewUser
+    const createNewUser = await this.userModel.create(createUserDto);
+    return createNewUser;
   }
 
   findAll() {
-    return this.userModel.find()
+    return this.userModel.find().populate('products').exec();
   }
 
- async findOne(id: string) {
-  if(!isValidObjectId(id)) throw new BadRequestException()
+  async findOne(id: string) {
+    if (!isValidObjectId(id)) throw new BadRequestException();
 
-    const findUserByID = await this.userModel.findById(id)
+    const findUserByID = await this.userModel.findById(id).populate('products').exec();
 
-    if(!findUserByID) throw new BadRequestException()
+    if (!findUserByID) throw new BadRequestException();
 
-    return findUserByID
+    return findUserByID;
   }
 
- async update(id: string, updateUserDto: UpdateUserDto) {
-  if(!isValidObjectId(id)) throw new BadRequestException()
-    const updateUserById = await this.userModel.findByIdAndUpdate(id,updateUserDto,{new:true})
-  if(!updateUserById) throw new BadRequestException()
-    return  updateUserById
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    if (!isValidObjectId(id)) throw new BadRequestException();
+    const updateUserById = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
+    if (!updateUserById) throw new BadRequestException();
+    return updateUserById;
   }
 
- async remove(id: string) {
-  if(!isValidObjectId(id)) throw new BadRequestException()
+  async remove(id: string) {
+    if (!isValidObjectId(id)) throw new BadRequestException();
 
-    const findUserAndDeleteById = await this.userModel.findByIdAndDelete(id)
+    const findUserAndDeleteById = await this.userModel.findByIdAndDelete(id);
 
-    if(!findUserAndDeleteById) throw new BadRequestException()
+    if (!findUserAndDeleteById) throw new BadRequestException();
 
-    return findUserAndDeleteById
+    return findUserAndDeleteById;
   }
 
-
-  async addPost(userId,postId){
-   const updateUSer = await this.userModel.findByIdAndUpdate(userId,{$push:{posts:postId}})
-   return updateUSer
+  async addPost(userId: string, postId: string) {
+    const updateUSer = await this.userModel.findByIdAndUpdate(userId, { $push: { posts: postId } });
+    return updateUSer;
   }
-
-
-
 }
